@@ -79,23 +79,30 @@ func (t *tcmsubTrigger) Start() error {
 	defer stream.Stop()
 
 	for v := range stream.C {
-		t, ok := v.(anaconda.Tweet)
+		twt, ok := v.(anaconda.Tweet)
 		if !ok {
 			logrus.Warningf("received unexpected value of type %T", v)
 			continue
 		}
 
-		if t.RetweetedStatus != nil {
+		if twt.RetweetedStatus != nil {
 			continue
 		}
 
-		_, err := api.Retweet(t.Id, false)
+		_, err := api.Retweet(twt.Id, false)
 		if err != nil {
-			logrus.Errorf("could not retweet %d: %v", t.Id, err)
+			logrus.Errorf("could not retweet %d: %v", twt.Id, err)
 			continue
 		}
-		logrus.Infof("retweeted %d", t.Id)
+		logrus.Infof("retweeted %d", twt.Id)
+		data := make(map[string]interface{})
+		data["message"] = "retweeted " + string(twt.Id)
 
+		//if(t.metadata.Metadata.OutPuts
+		startAttrs, errorAttrs := t.metadata.OutputsToAttrs(data, true)
+		if errorAttrs != nil || startAttrs == nil {
+			panic("Failed to create output attributes")
+		}
 	}
 	return nil
 }

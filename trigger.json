@@ -1,12 +1,12 @@
 {
   "name": "tcmsub",
   "type": "flogo:trigger",
-  "ref": "github.com/rahulnair20/mytrigger",
+  "ref": "github.com/jvanderl/flogo-components/trigger/tcmsub",
   "version": "0.0.1",
-  "title": "My Trigger",
-  "description": "My Trigger",
-  "author": "Rahul Nair <rnair@tibco.com>",
-  "homepage": "https://github.com/rahulnair20/mytrigger",
+  "title": "Receive TCM Message",
+  "description": "TCM Subscriber",
+  "author": "Jan van der Lugt <jvanderl@tibco.com>",
+  "homepage": "https://github.com/jvanderl/flogo-components/tree/master/trigger/tcmsub",
   "settings":[
     {
       "name": "consumerKey",
