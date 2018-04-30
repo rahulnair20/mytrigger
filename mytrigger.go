@@ -21,7 +21,6 @@ type tcmsubTrigger struct {
 	runner                action.Runner
 	config                *trigger.Config
 	destinationToActionId map[string]string
-	handlers              []*trigger.Handler
 }
 
 //NewFactory create a new Trigger factory
@@ -46,16 +45,13 @@ func (t *tcmsubTrigger) Metadata() *trigger.Metadata {
 }
 
 // Init implements ext.Trigger.Init
-func (t *tcmsubTrigger) Init(runner action.Runner, ctx trigger.InitContext) {
-	t.handlers = ctx.GetHandlers()
+func (t *tcmsubTrigger) Init(runner action.Runner) {
 	t.runner = runner
 }
 
 // Start implements trigger.Trigger.Start
 func (t *tcmsubTrigger) Start() error {
-	for _, handler := range t.handlers {
-		handler.GetStringSetting("destinationname")
-	}
+
 	// start the trigger
 	consKey := t.config.GetSetting("consumerKey")
 	consSec := t.config.GetSetting("consumerSecret")
@@ -83,43 +79,23 @@ func (t *tcmsubTrigger) Start() error {
 	defer stream.Stop()
 
 	for v := range stream.C {
-		twt, ok := v.(anaconda.Tweet)
+		t, ok := v.(anaconda.Tweet)
 		if !ok {
 			logrus.Warningf("received unexpected value of type %T", v)
 			continue
 		}
 
-		if twt.RetweetedStatus != nil {
+		if t.RetweetedStatus != nil {
 			continue
 		}
 
-		_, err := api.Retweet(twt.Id, false)
+		_, err := api.Retweet(t.Id, false)
 		if err != nil {
-			logrus.Errorf("could not retweet %d: %v", twt.Id, err)
+			logrus.Errorf("could not retweet %d: %v", t.Id, err)
 			continue
 		}
-		logrus.Infof("retweeted %d", twt.Id)
-		data := make(map[string]interface{})
-		data["message"] = "retweeted " + string(twt.Id)
+		logrus.Infof("retweeted %d", t.Id)
 
-		//if(t.metadata.Metadata.OutPuts
-		startAttrs, errorAttrs := t.metadata.OutputsToAttrs(data, true)
-		if errorAttrs != nil || startAttrs == nil {
-			panic("Failed to create output attributes")
-		}
-		for _, handler := range t.config.Handlers {
-			log.Info("In handlers section")
-			//actionID := action.Get(handler.ActionId)
-			//action := action.Get(actionID)
-			action := action.Get(handler.ActionId)
-			context := trigger.NewContext(context.Background(), startAttrs)
-
-			//_, _, err := t.runner.Run(context, action, actionID, nil)
-			_, _, err := t.runner.Run(context, action, handler.ActionId, nil)
-			if err != nil {
-				log.Error("Run action for ActionID failed : message lost", err)
-			}
-		}
 	}
 	return nil
 }
