@@ -1,0 +1,47 @@
+{
+  "name": "tcmsub",
+  "type": "flogo:trigger",
+  "ref": "github.com/jvanderl/flogo-components/trigger/tcmsub",
+  "version": "0.0.1",
+  "title": "Receive TCM Message",
+  "description": "TCM Subscriber",
+  "author": "Jan van der Lugt <jvanderl@tibco.com>",
+  "homepage": "https://github.com/jvanderl/flogo-components/tree/master/trigger/tcmsub",
+  "settings":[
+    {
+      "name": "consumerKey",
+      "type": "string",
+      "required" : true
+    },
+    {
+      "name": "consumerSecret",
+      "type": "string",
+      "required" : true
+    },
+    {
+      "name": "accessToken",
+      "type": "string",
+      "required" : true
+    },
+    {
+      "name": "accessTokenSecret",
+      "type": "string",
+      "required" : true
+    }
+  ],
+  "output": [
+    {
+      "name": "message",
+      "type": "string"
+    }
+  ],
+  "handler": {
+    "settings": [
+      {
+        "name": "destinationname",
+        "type": "string",
+        "required" : true
+      }
+    ]
+  }
+}
