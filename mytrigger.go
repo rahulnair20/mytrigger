@@ -21,6 +21,7 @@ type tcmsubTrigger struct {
 	runner                action.Runner
 	config                *trigger.Config
 	destinationToActionId map[string]string
+	handlers              []*trigger.Handler
 }
 
 //NewFactory create a new Trigger factory
@@ -45,13 +46,16 @@ func (t *tcmsubTrigger) Metadata() *trigger.Metadata {
 }
 
 // Init implements ext.Trigger.Init
-func (t *tcmsubTrigger) Init(runner action.Runner) {
+func (t *tcmsubTrigger) Init(runner action.Runner, ctx trigger.InitContext) {
+	t.handlers = ctx.GetHandlers()
 	t.runner = runner
 }
 
 // Start implements trigger.Trigger.Start
 func (t *tcmsubTrigger) Start() error {
-
+	for _, handler := range t.handlers {
+		handler.GetStringSetting("destinationname")
+	}
 	// start the trigger
 	consKey := t.config.GetSetting("consumerKey")
 	consSec := t.config.GetSetting("consumerSecret")
@@ -104,6 +108,7 @@ func (t *tcmsubTrigger) Start() error {
 			panic("Failed to create output attributes")
 		}
 		for _, handler := range t.config.Handlers {
+			log.Info("In handlers section")
 			//actionID := action.Get(handler.ActionId)
 			//action := action.Get(actionID)
 			action := action.Get(handler.ActionId)
@@ -112,7 +117,7 @@ func (t *tcmsubTrigger) Start() error {
 			//_, _, err := t.runner.Run(context, action, actionID, nil)
 			_, _, err := t.runner.Run(context, action, handler.ActionId, nil)
 			if err != nil {
-				panic("Run action for ActionID failed : message lost")
+				log.Error("Run action for ActionID failed : message lost", err)
 			}
 		}
 	}
